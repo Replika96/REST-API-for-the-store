@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Меню</h1>
+    <div id="products">
+        {% for category in categories %}
+            <h2>{{ category.name }}</h2>
+            <ul>
+                {% for product in category.products %}
+                    <li>
+                        <h3>{{ product.name }}</h3>
+                        <span class="price">{{ product.price }} руб.</span>
+                        <p>{{ product.description }}</p>
+                        {% if product.productAddons|length > 0 %}
+                            <p>Добавки:</p>
+                            <ul>
+                                {% for addon in product.productAddons %}
+                                    <li>
+                                        <input type="checkbox" class="addon" data-product-id="{{ product.id }}" data-addon-id="{{ addon.id }}" data-addon-price="{{ addon.price }}">
+                                        {{ addon.name }} - {{ addon.price }} руб.
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <button class="add-to-cart" data-product-id="{{ product.id }}">Добавить к заказу </button>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </div>
+    <div id="cart">
+        <h2>Корзина</h2>
+        <ul id="cart-items">
+            <!-- Корзина будет заполняться динамически -->
+        </ul>
+        <button id="checkout">Оформить заказ</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const cartItemsElement = document.getElementById('cart-items');
+            const cart = [];
+
+            function updateCartDisplay() {
+                cartItemsElement.innerHTML = '';
+                cart.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.innerText = `${item.product.name} - ${item.product.price} руб. (x${item.quantity})`;
+                    if (item.addons.length > 0) {
+                        const addonsList = document.createElement('ul');
+                        item.addons.forEach(addon => {
+                            const addonItem = document.createElement('li');
+                            addonItem.innerText = `${addon.name} - ${addon.price} руб.`;
+                            addonsList.appendChild(addonItem);
+                        });
+                        listItem.appendChild(addonsList);
+                    }
+                    cartItemsElement.appendChild(listItem);
+                });
+            }
+
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', function () {
+                    const productId = this.dataset.productId;
+                    const productElement = this.closest('li');
+                    const productName = productElement.querySelector('h3').innerText;
+                    const productPrice = parseFloat(productElement.querySelector('.price').innerText);
+
+                    const selectedAddons = [];
+                    productElement.querySelectorAll('.addon:checked').forEach(addonCheckbox => {
+                        const addonId = addonCheckbox.dataset.addonId;
+                        const addonName = addonCheckbox.closest('li').innerText;
+                        const addonPrice = parseFloat(addonCheckbox.dataset.addonPrice);
+                        selectedAddons.push({ id: addonId, name: addonName, price: addonPrice });
+                    });
+
+                    const cartItem = cart.find(item => item.product.id === productId);
+                    if (cartItem) {
+                        cartItem.quantity += 1;
+                        cartItem.addons = [...cartItem.addons, ...selectedAddons];
+                    } else {
+                        cart.push({ product: { id: productId, name: productName, price: productPrice }, quantity: 1, addons: selectedAddons });
+                    }
+                    updateCartDisplay();
+                });
+            });
+            document.getElementById('checkout').addEventListener('click', function () {
+                fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cart: cart })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Заказ оформлен!');
+                    cart.length = 0;
+                    updateCartDisplay();
+                })
+                .catch(error => console.error('Ошибка:', error));
+            });
+        });
+    </script>
+{% endblock %}

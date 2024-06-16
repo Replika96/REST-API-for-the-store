@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Новый заказ</title>
+</head>
+<body>
+    <h1>Новый заказ</h1>
+    <ul>
+        {% for item in cart %}
+            <li>
+                {{ item.product.name }} - {{ item.product.price }} руб. (x{{ item.quantity }})
+                {% if item.addons is not empty %}
+                    <ul>
+                        {% for addon in item.addons %}
+                            <li>{{ addon.name }} - {{ addon.price }} руб.</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

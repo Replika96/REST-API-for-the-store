@@ -1,0 +1,30 @@
+{%extends 'base.html.twig'%}
+
+{%block body%}
+
+    <p>
+        <h1>Ваше счастливое число - "{{ number }}"</h1>
+    </p>
+
+    <p> Round number: {{ 12.5|round }} </p>
+
+    <p>
+        {% if number > 50 %}
+            Number more than 50
+        {% else %}
+            Number less than 50
+        {% endif %}
+    </p>
+
+    <ul>
+        {% for item in list %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    
+    Render controller:
+    <div style="background: #6081c8">
+        {{render(controller('App\\Controller\\LuckyController::test1'))}}
+    </div>
+
+{%endblock%}c
