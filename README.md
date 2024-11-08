@@ -1,2 +1,3 @@
 ﻿# REST-API-for-the-store
-Symfony
+Задание на летней учебной практике у Web студии 
+Фреймворк Symfony, PHP
